@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ course['course_name'] }}</title>
+    <style>
+        .edit-fields {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ course['course_name'] }}</h1>
+    <h2>Create a New Unit</h2>
+    <form method="post" action="{{ url_for('course', course_name=course['course_name']) }}">
+        <label for="unit_name">Unit Name:</label>
+        <input type="text" name="unit_name" required><br>
+        <label for="unit_weight">Unit Weight:</label>
+        <input type="number" name="unit_weight" required><br>
+        <!-- Add dynamic fields for assignments -->
+        <button type="button" onclick="addAssignmentField()">Add Assignment</button><br>
+        <div id="assignment-fields">
+            <!-- Assignment fields will be added dynamically here -->
+        </div>
+
+        <h2>Unit Exam</h2>
+        <label for="unit_exam_mark_achieved">Unit Exam Mark Achieved:</label>
+        <input type="number" name="unit_exam_mark_achieved" required><br>
+        <label for="unit_exam_mark">Unit Exam Mark:</label>
+        <input type="number" name="unit_exam_mark" required><br>
+        <label for="unit_exam_weight">Unit Exam Weight:</label>
+        <input type="number" name="unit_exam_weight" required><br>
+
+        <input type="submit" value="Create Unit">
+    </form>
+
+    <h2>Units:</h2>
+    <ul>
+        {% for unit in course['units'] %}
+            <li>
+
+               
+                <strong>{{ unit['unit_name'] }}</strong><br>
+        {% set ns = namespace(total_weight_achieved=0) %}
+        {% set total_weight = unit['unit_exam']['unit_exam_weight'] %}
+        {% for assignment in unit['assignments'] %}
+            {% set assignment_weight_achieved = assignment['assignment_mark_achieved'] / assignment['assignment_maximum_mark'] * assignment['assignment_weight'] %}
+            {% set ns.total_weight_achieved = ns.total_weight_achieved + assignment_weight_achieved %}
+            {{ assignment['assignment_type'] }} mark: {{ assignment['assignment_mark_achieved'] }}/{{ assignment['assignment_maximum_mark'] }}, weight: {{ assignment['assignment_weight'] }}<br>
+        {% endfor %}
+
+        Unit exam mark: {{ unit['unit_exam']['unit_exam_mark_achieved'] }}/{{ unit['unit_exam']['unit_exam_mark'] }}, weight: {{ unit['unit_exam']['unit_exam_weight'] }}<br>
+
+        {% set unit_exam_weight_achieved = unit['unit_exam']['unit_exam_mark_achieved'] / unit['unit_exam']['unit_exam_mark'] * unit['unit_exam']['unit_exam_weight'] %}
+        {% set total_unit_mark = (ns.total_weight_achieved + unit_exam_weight_achieved) / total_weight * 100 %}
+
+        Total unit mark: {{ '%.2f' % total_unit_mark }}%<br>
+        Unit weight: {{ unit['unit_weight'] }}<br>
+        Unit weight achieved: {{'%.2f' % (total_unit_mark/100 * unit['unit_weight'])}}<br>
+
+
+            <button onclick="toggleEdit('edit-form-{{ loop.index }}')">Edit</button>
+
+              <!-- Add a Delete button -->
+        <form method="post" action="{{ url_for('delete_unit', course_name=course['course_name'], unit_name=unit['unit_name']) }}">
+            <input type="submit" value="Delete">
+        </form>
+
+            <form id="edit-form-{{ loop.index }}" class="edit-fields" method="post" action="{{ url_for('edit_unit', course_name=course['course_name'], unit_name=unit['unit_name']) }}">
+                <label for="unit_name">Unit Name:</label>
+                <input type="text" name="unit_name" value="{{ unit['unit_name'] }}" required><br>
+                <label for="unit_weight">Unit Weight:</label>
+                <input type="number" name="unit_weight" value="{{ unit['unit_weight'] }}" required><br>
+
+                <!-- Assignment fields -->
+                {% for i in range(unit['assignments']|length) %}
+                <label for="assignment_type_{{ i }}">Assignment Type:</label>
+                <input type="text" name="assignment_type_{{ i }}" value="{{ unit['assignments'][i]['assignment_type'] }}" required><br>
+                <label for="assignment_mark_achieved_{{ i }}">Mark Achieved:</label>
+                <input type="number" name="assignment_mark_achieved_{{ i }}" value="{{ unit['assignments'][i]['assignment_mark_achieved'] }}" required><br>
+                <label for="assignment_maximum_mark_{{ i }}">Maximum Mark:</label>
+                <input type="number" name="assignment_maximum_mark_{{ i }}" value="{{ unit['assignments'][i]['assignment_maximum_mark'] }}" required><br>
+                <label for="assignment_weight_{{ i }}">Assignment Weight:</label>
+                <input type="number" name="assignment_weight_{{ i }}" value="{{ unit['assignments'][i]['assignment_weight'] }}" required><br>
+                {% endfor %}
+
+                <!-- Add a hidden input field to track the number of assignments -->
+                <input type="hidden" name="num_assignments" value="{{ unit['assignments']|length }}">
+
+                <label for="unit_exam_mark">Unit Exam Mark:</label>
+                <input type="number" name="unit_exam_mark" value="{{ unit['unit_exam']['unit_exam_mark'] }}" required><br>
+                <label for="unit_exam_mark_achieved">Unit Exam Mark Achieved:</label>
+                <input type="number" name="unit_exam_mark_achieved" value="{{ unit['unit_exam']['unit_exam_mark_achieved'] }}" required><br>
+                <label for="unit_exam_weight">Unit Exam Weight:</label>
+                <input type="number" name="unit_exam_weight" value="{{ unit['unit_exam']['unit_exam_weight'] }}" required><br>
+
+                <input type="submit" value="Save Changes">
+            </form>
+
+            <hr>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    <script>
+       function addAssignmentField(formId) {
+        var div = document.createElement('div');
+        var index = document.querySelectorAll(`#${formId} .assignment-fields`).length;
+        div.innerHTML = `
+            <div class="assignment-fields">
+                <label for="assignment_type_${index}">Assignment Type:</label>
+                <input type="text" name="assignment_type_${index}" required><br>
+                <label for="assignment_mark_achieved_${index}">Mark Achieved:</label>
+                <input type="number" name="assignment_mark_achieved_${index}" required><br>
+                <label for="assignment_maximum_mark_${index}">Maximum Mark:</label>
+                <input type="number" name="assignment_maximum_mark_${index}" required><br>
+                <label for="assignment_weight_${index}">Assignment Weight:</label>
+                <input type="number" name="assignment_weight_${index}" required><br>
+            </div>
+        `;
+        document.getElementById(formId).appendChild(div);
+    }
+
+        function toggleEdit(formId) {
+            var editForm = document.getElementById(formId);
+            if (editForm.classList.contains('edit-fields')) {
+                editForm.classList.remove('edit-fields');
+            } else {
+                editForm.classList.add('edit-fields');
+            }
+        }
+    </script>
+</body>
+</html>

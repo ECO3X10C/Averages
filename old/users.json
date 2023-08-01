@@ -1,0 +1,1 @@
+{"user1": {"password": "password1", "courses": {}}, "user2": {"password": "password2", "courses": {"Physics": [{"unit_name": "Dynamics", "assignments": ["Quiz 1 15 15 10"], "final": "30 30 70"}]}}}

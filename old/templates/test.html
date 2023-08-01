@@ -1,0 +1,22 @@
+<form action="{{ url_for('add_unit', username=username, course_name=course_name) }}" method="POST">
+    <label for="unit_name">Unit Name:</label>
+    <input type="text" id="unit_name" name="unit_name" required>
+    <br>
+    <div id="assignmentsDiv">
+        <label for="assignments">Assignments:</label>
+        <input type="text" name="assignments_0" required>
+        <br>
+    </div>
+    <button type="button" onclick="addAssignmentField()">Add More Assignments</button>
+    <br>
+    <label for="final">Final:</label>
+    <input type="text" id="final" name="final" required>
+    <br>
+    <input type="submit" value="Add Unit">
+</form>
+
+
+
+<form action="{{ url_for('delete_course', username=username, course_name=course_name) }}" method="post">
+    <input type="submit" value="Delete Course">
+</form>

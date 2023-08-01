@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ session['username'] }}!</h1>
+
+    {% if not courses %}
+    <h2>You don't have any courses yet.</h2>
+    <a href="{{ url_for('create_course') }}">Create Course</a>
+    {% else %}
+    <a href="{{ url_for('create_course') }}">Create Course</a>
+    <h2>Your Courses:</h2>
+    <ul>
+        {% for course in courses %}
+        <li><a href="{{ url_for('course', course_name=course['course_name']) }}">{{ course['course_name'] }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>

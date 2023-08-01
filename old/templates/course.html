@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Course</title>
+</head>
+<body>
+    <h2>Course: {{ course_name }}</h2>
+    <h3>Units</h3>
+    <form action="{{ url_for('add_unit', username=username, course_name=course_name) }}" method="POST">
+        <label for="unit_name">Unit Name:</label>
+        <input type="text" id="unit_name" name="unit_name" required>
+        <br>
+        <div id="assignmentsDiv">
+            <label for="assignments">Assignments:</label>
+            <input type="text" name="assignments_0" required>
+            <br>
+        </div>
+        <button type="button" onclick="addAssignmentField()">Add More Assignments</button>
+        <br>
+        <label for="final">Final:</label>
+        <input type="text" id="final" name="final" required>
+        <br>
+        <input type="submit" value="Add Unit">
+    </form>
+    <h3>Your Units:</h3>
+    {% if units %}
+        <ul>
+            {% for unit in units %}
+                <li>
+                    <strong>{{ unit.unit_name }}</strong>
+                    <br>
+                    Assignments:
+                    <ul>
+                        {% for assignment in unit.assignments %}
+                            <li>{{ assignment.name }}, {{ assignment.achieved }}/{{ assignment.weight }}, weight: {{ assignment.weight }}, achieved: {{ assignment.achieved }}</li>
+                        {% endfor %}
+                    </ul>
+                    Final: {{ unit.final }}
+                    <button onclick="toggleEditForm('editForm_{{ loop.index0 }}')">Edit Unit</button>
+                    <form id="editForm_{{ loop.index0 }}" action="{{ url_for('edit_unit', username=username, course_name=course_name, unit_name=unit.unit_name) }}" method="POST" style="display: none;">
+                        <label for="unit_name">Edit Unit Name:</label>
+                        <input type="text" id="unit_name" name="unit_name" value="{{ unit.unit_name }}" required>
+                        <br>
+                        <div id="assignmentsDiv">
+                            <label for="assignments">Edit Assignments:</label>
+                            {% for i in range(unit.assignments|length) %}
+                                {% set assignment = unit.assignments[i] %}
+                                <input type="text" name="assignment_{{ i }}" value="{{ assignment.name }} {{ assignment.achieved }} {{ assignment.weight }}" required>
+                                <br>
+                            {% endfor %}
+                        </div>
+                        <button type="button" onclick="addAssignmentField()">Add More Assignments</button>
+                        <br>
+                        <label for="final">Edit Final:</label>
+                        <input type="text" id="final" name="final" value="{{ unit.final }}" required>
+                        <br>
+                        <input type="submit" value="Save Changes">
+                    </form>
+                    <form action="{{ url_for('delete_unit', username=username, course_name=course_name, unit_name=unit.unit_name) }}" method="POST">
+                        <input type="submit" value="Delete Unit">
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No units added yet.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('dashboard', username=username) }}">Back to Courses</a>
+
+    <form action="{{ url_for('add_unit', username=username, course_name=course_name) }}" method="POST">
+        <button type="submit">Add Unit</button>
+    </form>
+    <form action="{{ url_for('delete_course', username=username, course_name=course_name) }}" method="post">
+        <input type="submit" value="Delete Course">
+    </form>
+
+    <script>
+        function toggleEditForm(formId) {
+            const form = document.getElementById(formId);
+            if (form.style.display === "none") {
+                form.style.display = "block";
+            } else {
+                form.style.display = "none";
+            }
+        }
+
+        let assignmentCounter = 1;
+
+        function addAssignmentField() {
+            const assignmentsDiv = document.getElementById('assignmentsDiv');
+            const newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.name = `assignments_${assignmentCounter}`;
+            newInput.required = true;
+            newInput.placeholder = 'Assignment';
+            assignmentsDiv.appendChild(newInput);
+            assignmentCounter++;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ username }}!</h1>
+    <h2>Here are your courses:</h2>
+    <ul>
+        {% for course in courses %}
+            <li><a href="{{ url_for('course', username=username, course_name=course) }}">{{ course }}</a></li>
+        {% endfor %}
+    </ul>
+    <form action="{{ url_for('create_course', username=username) }}" method="post">
+        <label for="course_name">Create a new course:</label>
+        <input type="text" id="course_name" name="course_name" required>
+        <br>
+        <input type="submit" value="Create">
+    </form>
+    <br>
+    <form action="{{ url_for('login') }}" method="post">
+        <input type="submit" value="Logout">
+    </form>
+</body>
+</html>
